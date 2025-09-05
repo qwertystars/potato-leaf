@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Leaf Disease Analysis Result</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        h2 {
+            color: #2e7d32;
+            text-align: center;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        .model-badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .confidence-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            padding: 0.4rem 0;
+            font-size: 1rem;
+        }
+        .probability-bar {
+            height: 15px;
+            border-radius: 8px;
+            background-color: #e0e0e0;
+            margin-top: 4px;
+            position: relative;
+        }
+        .probability-fill {
+            height: 100%;
+            border-radius: 8px;
+            background: linear-gradient(to right, #ff9999, #66b2ff, #99ff99);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .weather {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .weather-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .weather-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+        .weather-value {
+            font-size: 1.1rem;
+            color: #333;
+        }
+        .risk-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        .risk-low { background: #d4edda; color: #155724; }
+        .risk-medium { background: #fff3cd; color: #856404; }
+        .risk-high { background: #f8d7da; color: #721c24; }
+        .risk-very-high { background: #f5c6cb; color: #721c24; }
+        .risk-unknown { background: #e2e3e5; color: #6c757d; }
+        .weather-note {
+            grid-column: 1 / -1;
+            font-style: italic;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 1rem auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .image-container {
+            text-align: center;
+        }
+        .image-label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        .advice-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #2e7d32;
+            margin: 1rem 0;
+        }
+        a {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.7rem 1.5rem;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            transition: 0.3s;
+        }
+        a:hover {
+            background-color: #45a049;
+        }
+        .heatmap-section {
+            background: #fff3e0;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #ff9800;
+            margin: 1rem 0;
+        }
+        .feature-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+        .muted { color: #666; font-size: 0.95rem; }
+        .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 8px; background: #e9ecef; font-weight: 600; }
+        .issues-list { padding-left: 1.2rem; margin: 0.5rem 0; }
+    </style>
+    
+    <!-- Google Translate Integration -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/translate-widget.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/weather-widget.css') }}">
+    <script src="{{ url_for('static', filename='js/google-translate.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dynamic-translation.js') }}"></script>
+    
+    <script>
+        // Initialize translation when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            window.googleTranslateManager = new GoogleTranslateManager();
+        });
+    </script>
+    
+    <!-- Hidden Google Translate Element -->
+    <div id="google_translate_element" style="display: none;"></div>
+</head>
+<body>
+    <header>
+        <h1 data-translate="ui.results.title" style="margin: 0 0 1rem 0; width: 100%; text-align: center;">🌿 Advanced Leaf Disease Analysis Result</h1>
+        <div class="model-badge">{{ model_used }} <span class="feature-badge">AI-Powered</span></div>
+    </header>
+    <main>
+        <div class="card">
+            <h2>🔬 Disease Classification: {{ disease }}</h2>
+            <div class="confidence-score">Confidence: {{ confidence }}%</div>
+
+            <!-- Weather Impact Analysis Widget -->
+            {% if disease != 'healthy' %}
+            <div class="weather-widget">
+                <div class="weather-widget-header">
+                    <span class="weather-widget-icon">🌤️</span>
+                    <h3 class="weather-widget-title">Weather Impact Analysis</h3>
+                </div>
+                <p class="weather-widget-description">
+                    Get a 3-day weather forecast and analyze how upcoming weather conditions might affect the spread of {{ disease.replace('_', ' ') }}.
+                </p>
+                <a href="{{ url_for('weather_prediction') }}?disease={{ disease }}" 
+                   class="weather-impact-button" target="_blank">
+                    <span class="icon">🔬</span>
+                    Analyze Weather Impact
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Treatment Guide Widget -->
+            <div class="treatment-guide-widget">
+                <div class="weather-widget-header">
+                    <span class="weather-widget-icon">💊</span>
+                    <h3 class="weather-widget-title">Comprehensive Treatment Guide</h3>
+                </div>
+                <p class="weather-widget-description">
+                    Get detailed chemical, organic, and preventive treatment options for {{ disease.replace('_', ' ').title() }} with professional agricultural recommendations.
+                </p>
+                <a href="{{ url_for('treatment_guide', disease=disease) }}?confidence={{ confidence }}" 
+                   class="treatment-guide-button" target="_blank">
+                    <span class="icon">🌿</span>
+                    View Treatment Guide
+                </a>
+            </div>
+
+            <div class="section-title">📊 Prediction Probabilities</div>
+            <ul>
+                {% for label, prob in zip(classes, probability) %}
+                <li>
+                    {{ label }}: {{ prob }}%
+                    <div class="probability-bar">
+                        <div class="probability-fill" style="width: {{ prob }}%;"></div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div class="section-title">📈 Visualization</div>
+            <div class="image-grid">
+                <div class="image-container">
+                    <div class="image-label">📷 Original Image</div>
+                    <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded leaf">
+                </div>
+                {% if processed_filename %}
+                <div class="image-container">
+                    <div class="image-label">🛠️ Processed (Mobile Optimized)</div>
+                    <img src="{{ url_for('static', filename='uploads/' + processed_filename) }}" alt="Processed leaf">
+                </div>
+                {% endif %}
+                {% if bar_chart %}
+                <div class="image-container">
+                    <div class="image-label">📊 Probability Bar Chart (All Classes)</div>
+                    <img src="{{ url_for('static', filename='results/' + bar_chart) }}" alt="Probability bar chart">
+                </div>
+                {% endif %}
+                {% if pie_chart %}
+                <div class="image-container">
+                    <div class="image-label">🥧 Top 3 Classes Probability Pie Chart</div>
+                    <img src="{{ url_for('static', filename='results/' + pie_chart) }}" alt="Top 3 classes pie chart">
+                </div>
+                {% endif %}
+                {% if heatmap_available %}
+                <div class="image-container">
+                    <div class="image-label">🔥 Disease Heatmap</div>
+                    <img src="{{ url_for('static', filename='results/' + heatmap_path) }}" alt="Disease heatmap">
+                    <div class="heatmap-section">
+                        <strong>🎯 Heatmap Analysis:</strong><br>
+                        Red/yellow areas show where the AI detected disease symptoms.
+                        This helps identify the exact location and spread of the disease on the leaf.
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid-container">
+            {% if weather %}
+            <div class="card">
+                <div class="section-title">🌤️ Weather Conditions & Risk Assessment</div>
+                <div class="weather">
+                    <div class="weather-item">
+                        <span class="weather-label">City</span>
+                        <span class="weather-value">{{ weather.city }}{% if weather.country %}, {{ weather.country }}{% endif %}</span>
+                    </div>
+                    <div class="weather-item">
+                        <span class="weather-label">Temperature</span>
+                        <span class="weather-value">{{ weather.temp }}{% if weather.temp != '-' %}°C{% endif %}</span>
+                    </div>
+                    <div class="weather-item">
+                        <span class="weather-label">Humidity</span>
+                        <span class="weather-value">{{ weather.humidity }}{% if weather.humidity != '-' %}%{% endif %}</span>
+                    </div>
+                    <div class="weather-item">
+                        <span class="weather-label">Conditions</span>
+                        <span class="weather-value">{{ weather.desc }}</span>
+                    </div>
+                    <div class="weather-item">
+                        <span class="weather-label">Disease Risk Level</span>
+                        <span class="weather-value">
+                            <span class="risk-badge risk-{{ weather.risk.lower().replace(' ', '-') }}">
+                                {{ weather.risk }}
+                            </span>
+                        </span>
+                    </div>
+
+                    {% if weather.note %}
+                    <div class="weather-note">
+                        ℹ️ {{ weather.note }}
+                    </div>
+                    {% endif %}
+
+                    {% if weather.status == 'city_not_found' %}
+                    <div class="weather-note">
+                        ⚠️ City not found. Please check the spelling and try again.
+                    </div>
+                    {% elif weather.status == 'api_error' %}
+                    <div class="weather-note">
+                        ⚠️ Weather service temporarily unavailable.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="section-title">🌤️ Weather Conditions & Risk Assessment</div>
+                <div class="muted">No city provided or weather service unavailable.</div>
+            </div>
+            {% endif %}
+
+            {% if validation_info %}
+            <div class="card">
+                <div class="section-title">🧪 Image Quality Check</div>
+                <div>
+                    <span class="badge">Valid: {{ 'Yes' if validation_info.is_valid else 'No' }}</span>
+                    <span class="badge">Confidence: {{ validation_info.confidence }}%</span>
+                </div>
+                {% if validation_info.issues %}
+                <div class="muted" style="margin-top:0.5rem;">Detected issues:</div>
+                <ul class="issues-list">
+                    {% for issue in validation_info.issues %}
+                    <li>• {{ issue }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="section-title">💊 Treatment Recommendations</div>
+                <div class="advice-section">
+                    {{ advice | safe }}
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/" data-translate="ui.analyze.another">🔄 Analyze Another Leaf</a>
+        </div>
+    </main>
+
+    <!-- Language Manager Script -->
+    <script src="/static/js/language-manager.js"></script>
+    
+    <script>
+        // Translate dynamic content when language changes
+        window.addEventListener('languageChanged', async function(event) {
+            const language = event.detail.language;
+            
+            // Translate disease name
+            const diseaseElement = document.querySelector('[data-disease-name]');
+            if (diseaseElement && language !== 'en') {
+                const originalDisease = diseaseElement.getAttribute('data-disease-name');
+                try {
+                    const translatedDisease = await languageManager.translateContent(originalDisease, 'disease_analysis');
+                    diseaseElement.textContent = '🔬 ' + languageManager.t('ui.disease.classification') + ': ' + translatedDisease;
+                } catch (error) {
+                    console.error('Error translating disease name:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

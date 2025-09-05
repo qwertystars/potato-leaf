@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Chat - Potato Disease Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+        }
+        
+        .header {
+            background-color: #2c5530;
+            color: white;
+            padding: 0.75rem;
+            text-align: center;
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        
+        .mobile-header {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #2c5530;
+            color: white;
+            padding: 0.75rem;
+            position: relative;
+            z-index: 1001;
+        }
+        
+        .hamburger-menu {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background-color: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 999;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+        
+        .room-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .room-item {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .room-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .room-item.active {
+            background-color: #2c5530;
+            color: white;
+        }
+        
+        .room-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .room-description {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .room-item.active .room-description {
+            color: #ccc;
+        }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            position: relative;
+            height: 100%;
+        }
+        
+        .chat-header {
+            padding: 0.75rem;
+            border-bottom: 1px solid #ddd;
+            background-color: #f8f9fa;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .chat-header h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .chat-header p {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding-bottom: 80px; /* Space for fixed input */
+        }
+        
+        .message {
+            padding: 0.75rem;
+            border-radius: 15px;
+            max-width: 75%;
+            word-wrap: break-word;
+            animation: messageSlideIn 0.3s ease;
+        }
+        
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.own {
+            align-self: flex-end;
+            background-color: #2c5530;
+            color: white;
+        }
+        
+        .message.other {
+            align-self: flex-start;
+            background-color: #e9ecef;
+            color: #333;
+        }
+        
+        .message.system {
+            align-self: center;
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            font-style: italic;
+            max-width: 90%;
+        }
+        
+        .message-header {
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+            opacity: 0.7;
+        }
+        
+        .message-content {
+            line-height: 1.4;
+        }
+        
+        .message-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+            background-color: #f8f9fa;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-input-form {
+            display: flex;
+            gap: 0.5rem;
+            max-width: 100%;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+            background-color: white;
+        }
+        
+        .send-button {
+            padding: 0.75rem 1.5rem;
+            background-color: #2c5530;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+        
+        .send-button:hover {
+            background-color: #1e3a22;
+        }
+        
+        .send-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .typing-indicator {
+            padding: 0.5rem 1rem;
+            font-style: italic;
+            color: #666;
+            font-size: 0.85rem;
+            position: fixed;
+            bottom: 80px;
+            left: 1rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            z-index: 999;
+        }
+        
+        .connection-status {
+            padding: 0.5rem 1rem;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        
+        .connection-status.disconnected {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .user-profile {
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+            background-color: #f8f9fa;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .user-context {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                display: none;
+            }
+            
+            .mobile-header {
+                display: flex;
+            }
+            
+            .chat-container {
+                flex-direction: row;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 280px;
+                transform: translateX(-100%);
+                z-index: 1001;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+            
+            .chat-area {
+                width: 100%;
+                margin-left: 0;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .message-input-container {
+                padding: 0.75rem;
+            }
+            
+            .messages-container {
+                padding: 0.75rem;
+                padding-bottom: 90px;
+            }
+            
+            .chat-header {
+                padding: 0.75rem;
+            }
+            
+            .room-list {
+                padding: 0.75rem;
+            }
+            
+            .user-profile {
+                padding: 0.75rem;
+            }
+            
+            .typing-indicator {
+                bottom: 70px;
+                left: 0.75rem;
+                right: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .message-input {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            .send-button {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .header h1 {
+                font-size: 1.1rem;
+            }
+            
+            .sidebar {
+                width: 260px;
+            }
+        }
+    </style>
+    
+    <!-- Google Translate Integration -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/translate-widget.css') }}">
+    <script src="{{ url_for('static', filename='js/google-translate.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dynamic-translation.js') }}"></script>
+    
+    <!-- Hidden Google Translate Element -->
+    <div id="google_translate_element" style="display: none;"></div>
+</head>
+<body>
+    <div class="header">
+        <h1>🥔 Farmer Chat - Potato Disease Analyzer</h1>
+        <p>Connect with fellow farmers to discuss problems and share solutions</p>
+    </div>
+    
+    <div class="mobile-header">
+        <button class="hamburger-menu" id="mobileMenuBtn">☰</button>
+        <h1 id="mobileRoomTitle">Farmer Chat</h1>
+        <div></div> <!-- Spacer for centering -->
+    </div>
+    
+    <div class="connection-status" id="connectionStatus">
+        Connecting to chat server...
+    </div>
+    
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <div class="chat-container">
+        <div class="sidebar" id="sidebar">
+            <div class="user-profile">
+                <div class="user-name" id="userName">Farmer User</div>
+                <div class="user-context" id="userContext">Loading...</div>
+            </div>
+            
+            <div class="room-list" id="roomList">
+                <div class="room-item" data-room-id="loading">
+                    <div class="room-name">Loading rooms...</div>
+                    <div class="room-description">Please wait while we load available chat rooms.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-area">
+            <div class="chat-header">
+                <h3 id="currentRoomName">Select a chat room</h3>
+                <p id="currentRoomDescription">Choose a room from the sidebar to start chatting</p>
+            </div>
+            
+            <div class="messages-container" id="messagesContainer">
+                <div class="message system">
+                    <div class="message-content">
+                        Welcome to the Farmer Chat! Select a room from the sidebar to start discussing potato diseases and farming solutions with fellow farmers.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                Someone is typing...
+            </div>
+            
+            <div class="message-input-container">
+                <form class="message-input-form" id="messageForm">
+                    <input 
+                        type="text" 
+                        class="message-input" 
+                        id="messageInput" 
+                        placeholder="Type your message about farming or potato diseases..."
+                        disabled
+                    >
+                    <button type="submit" class="send-button" id="sendButton" disabled>Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script>
+        // Chat application JavaScript using Socket.IO
+        class FarmerChat {
+            constructor() {
+                this.socket = null;
+                this.currentRoomId = null;
+                this.userId = this.generateUserId();
+                this.apiBaseUrl = '/api/chat';
+                this.isConnected = false;
+                this.typingTimeout = null;
+                this.isMobile = window.innerWidth <= 768;
+                this.sidebarOpen = false;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.setupMobileNavigation();
+                this.connectSocket();
+                this.loadRooms();
+                this.setupUserProfile();
+                
+                // Auto-scroll to bottom for new messages
+                this.setupAutoScroll();
+            }
+            
+            generateUserId() {
+                // Generate a simple user ID (in production, this would come from authentication)
+                let userId = localStorage.getItem('farmer_chat_user_id');
+                if (!userId) {
+                    userId = 'farmer_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('farmer_chat_user_id', userId);
+                }
+                return userId;
+            }
+            
+            initializeElements() {
+                this.elements = {
+                    connectionStatus: document.getElementById('connectionStatus'),
+                    roomList: document.getElementById('roomList'),
+                    currentRoomName: document.getElementById('currentRoomName'),
+                    currentRoomDescription: document.getElementById('currentRoomDescription'),
+                    messagesContainer: document.getElementById('messagesContainer'),
+                    messageForm: document.getElementById('messageForm'),
+                    messageInput: document.getElementById('messageInput'),
+                    sendButton: document.getElementById('sendButton'),
+                    typingIndicator: document.getElementById('typingIndicator'),
+                    userName: document.getElementById('userName'),
+                    userContext: document.getElementById('userContext'),
+                    mobileMenuBtn: document.getElementById('mobileMenuBtn'),
+                    mobileRoomTitle: document.getElementById('mobileRoomTitle'),
+                    sidebar: document.getElementById('sidebar'),
+                    sidebarOverlay: document.getElementById('sidebarOverlay')
+                };
+            }
+            
+            setupEventListeners() {
+                this.elements.messageForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.sendMessage();
+                });
+                
+                this.elements.messageInput.addEventListener('input', () => {
+                    this.handleTyping();
+                });
+                
+                this.elements.messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    this.isMobile = window.innerWidth <= 768;
+                    if (!this.isMobile && this.sidebarOpen) {
+                        this.closeSidebar();
+                    }
+                });
+            }
+            
+            setupMobileNavigation() {
+                if (this.elements.mobileMenuBtn) {
+                    this.elements.mobileMenuBtn.addEventListener('click', () => {
+                        this.toggleSidebar();
+                    });
+                }
+                
+                if (this.elements.sidebarOverlay) {
+                    this.elements.sidebarOverlay.addEventListener('click', () => {
+                        this.closeSidebar();
+                    });
+                }
+            }
+            
+            toggleSidebar() {
+                if (this.sidebarOpen) {
+                    this.closeSidebar();
+                } else {
+                    this.openSidebar();
+                }
+            }
+            
+            openSidebar() {
+                this.sidebarOpen = true;
+                this.elements.sidebar.classList.add('open');
+                this.elements.sidebarOverlay.classList.add('show');
+            }
+            
+            closeSidebar() {
+                this.sidebarOpen = false;
+                this.elements.sidebar.classList.remove('open');
+                this.elements.sidebarOverlay.classList.remove('show');
+            }
+            
+            setupAutoScroll() {
+                // Create a mutation observer to auto-scroll when new messages are added
+                const observer = new MutationObserver(() => {
+                    this.scrollToBottom();
+                });
+                
+                observer.observe(this.elements.messagesContainer, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+            
+            async setupUserProfile() {
+                try {
+                    const displayName = localStorage.getItem('farmer_display_name') || `Farmer_${this.userId.slice(-4)}`;
+                    const farmingContext = localStorage.getItem('farmer_context') || 'Potato farmer';
+                    
+                    // Create or update user profile
+                    await fetch(`${this.apiBaseUrl}/users/${this.userId}/profile`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            display_name: displayName,
+                            farming_context: farmingContext
+                        })
+                    });
+                    
+                    this.elements.userName.textContent = displayName;
+                    this.elements.userContext.textContent = farmingContext;
+                } catch (error) {
+                    console.error('Failed to setup user profile:', error);
+                    this.elements.userName.textContent = `Farmer_${this.userId.slice(-4)}`;
+                    this.elements.userContext.textContent = 'Potato farmer';
+                }
+            }
+            
+            connectSocket() {
+                // Initialize Socket.IO connection
+                this.socket = io();
+                
+                this.socket.on('connect', () => {
+                    this.isConnected = true;
+                    this.updateConnectionStatus('Connected', true);
+                    console.log('Connected to chat server');
+                });
+                
+                this.socket.on('disconnect', () => {
+                    this.isConnected = false;
+                    this.updateConnectionStatus('Disconnected', false);
+                    this.elements.messageInput.disabled = true;
+                    this.elements.sendButton.disabled = true;
+                });
+                
+                this.socket.on('room_joined', (data) => {
+                    console.log('Joined room:', data);
+                    this.elements.messageInput.disabled = false;
+                    this.elements.sendButton.disabled = false;
+                });
+                
+                this.socket.on('new_message', (data) => {
+                    this.displayMessage(data, true);
+                });
+                
+                this.socket.on('user_joined', (data) => {
+                    this.displaySystemMessage(`${data.user_id} joined the chat`);
+                });
+                
+                this.socket.on('user_left', (data) => {
+                    this.displaySystemMessage(`${data.user_id} left the chat`);
+                });
+                
+                this.socket.on('user_typing', (data) => {
+                    this.showTypingIndicator(data.user_id);
+                });
+                
+                this.socket.on('user_stop_typing', (data) => {
+                    this.hideTypingIndicator();
+                });
+                
+                this.socket.on('message_rejected', (data) => {
+                    this.showError(`Message rejected: ${data.reason}`);
+                    if (data.suggestions) {
+                        data.suggestions.forEach(suggestion => {
+                            this.displaySystemMessage(`💡 Suggestion: ${suggestion}`);
+                        });
+                    }
+                });
+                
+                this.socket.on('error', (data) => {
+                    this.showError(data.message);
+                });
+            }
+            
+            async loadRooms() {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/rooms`);
+                    const data = await response.json();
+                    
+                    this.displayRooms(data.rooms);
+                } catch (error) {
+                    console.error('Failed to load rooms:', error);
+                    this.showError('Failed to load chat rooms');
+                }
+            }
+            
+            displayRooms(rooms) {
+                this.elements.roomList.innerHTML = '';
+                let generalRoom = null;
+                
+                rooms.forEach(room => {
+                    const roomElement = document.createElement('div');
+                    roomElement.className = 'room-item';
+                    roomElement.dataset.roomId = room.id || room.room_id;
+                    
+                    roomElement.innerHTML = `
+                        <div class="room-name">${room.name}</div>
+                        <div class="room-description">${room.description || 'No description'}</div>
+                    `;
+                    
+                    roomElement.addEventListener('click', () => {
+                        this.joinRoom(room.id || room.room_id, room.name, room.description);
+                    });
+                    
+                    this.elements.roomList.appendChild(roomElement);
+                    
+                    // Check if this is the general discussion room
+                    if (room.name.toLowerCase().includes('general') || room.name.toLowerCase().includes('discussion')) {
+                        generalRoom = room;
+                    }
+                });
+                
+                // Auto-join general discussion room if available
+                if (generalRoom && !this.currentRoomId) {
+                    setTimeout(() => {
+                        this.joinRoom(generalRoom.id || generalRoom.room_id, generalRoom.name, generalRoom.description);
+                    }, 500);
+                }
+            }
+            
+            async joinRoom(roomId, roomName, roomDescription) {
+                if (this.currentRoomId === roomId) {
+                    // If on mobile and clicking the same room, just close sidebar
+                    if (this.isMobile) {
+                        this.closeSidebar();
+                    }
+                    return;
+                }
+                
+                // Leave current room if any
+                if (this.currentRoomId) {
+                    this.socket.emit('leave_room', {
+                        room_id: this.currentRoomId,
+                        user_id: this.userId
+                    });
+                }
+                
+                // Update UI
+                this.currentRoomId = roomId;
+                this.elements.currentRoomName.textContent = roomName;
+                this.elements.currentRoomDescription.textContent = roomDescription || 'No description';
+                
+                // Update mobile header title
+                if (this.elements.mobileRoomTitle) {
+                    this.elements.mobileRoomTitle.textContent = roomName;
+                }
+                
+                // Update active room in sidebar
+                document.querySelectorAll('.room-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                const activeRoom = document.querySelector(`[data-room-id="${roomId}"]`);
+                if (activeRoom) {
+                    activeRoom.classList.add('active');
+                }
+                
+                // Close sidebar on mobile after selecting room
+                if (this.isMobile) {
+                    this.closeSidebar();
+                }
+                
+                // Clear messages and show loading
+                this.elements.messagesContainer.innerHTML = `
+                    <div class="message system">
+                        <div class="message-content">Loading messages for ${roomName}...</div>
+                    </div>
+                `;
+                
+                // Enable input
+                this.elements.messageInput.disabled = false;
+                this.elements.sendButton.disabled = false;
+                this.elements.messageInput.placeholder = `Share your thoughts about ${roomName.toLowerCase()}...`;
+                
+                // Join room via Socket.IO
+                this.socket.emit('join_room', {
+                    room_id: roomId,
+                    user_id: this.userId
+                });
+                
+                // Load room messages
+                await this.loadMessages(roomId);
+            }
+            
+            async loadMessages(roomId) {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/rooms/${roomId}/messages?limit=20`);
+                    const data = await response.json();
+                    
+                    // Display messages in chronological order
+                    data.messages.reverse().forEach(message => {
+                        this.displayMessage(message, false);
+                    });
+                } catch (error) {
+                    console.error('Failed to load messages:', error);
+                }
+            }
+            
+            displayMessage(message, isRealTime = false) {
+                const messageElement = document.createElement('div');
+                const isOwnMessage = message.user_id === this.userId;
+                
+                messageElement.className = `message ${isOwnMessage ? 'own' : 'other'}`;
+                
+                const timestamp = new Date(message.timestamp || message.sent_at).toLocaleTimeString();
+                
+                messageElement.innerHTML = `
+                    <div class="message-header">${message.user_id} • ${timestamp}</div>
+                    <div class="message-content">${this.escapeHtml(message.content)}</div>
+                `;
+                
+                this.elements.messagesContainer.appendChild(messageElement);
+                
+                if (isRealTime) {
+                    this.scrollToBottom();
+                }
+            }
+            
+            displaySystemMessage(content) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message system';
+                messageElement.innerHTML = `
+                    <div class="message-content">${this.escapeHtml(content)}</div>
+                `;
+                
+                this.elements.messagesContainer.appendChild(messageElement);
+                this.scrollToBottom();
+            }
+            
+            sendMessage() {
+                const content = this.elements.messageInput.value.trim();
+                if (!content || !this.isConnected || !this.currentRoomId) return;
+                
+                this.socket.emit('send_message', {
+                    room_id: this.currentRoomId,
+                    user_id: this.userId,
+                    content: content
+                });
+                
+                this.elements.messageInput.value = '';
+                this.stopTyping();
+            }
+            
+            handleTyping() {
+                if (!this.isConnected || !this.currentRoomId) return;
+                
+                // Send typing indicator
+                this.socket.emit('typing', {
+                    room_id: this.currentRoomId,
+                    user_id: this.userId
+                });
+                
+                // Clear previous timeout
+                if (this.typingTimeout) {
+                    clearTimeout(this.typingTimeout);
+                }
+                
+                // Set timeout to stop typing
+                this.typingTimeout = setTimeout(() => {
+                    this.stopTyping();
+                }, 2000);
+            }
+            
+            stopTyping() {
+                if (this.isConnected && this.currentRoomId) {
+                    this.socket.emit('stop_typing', {
+                        room_id: this.currentRoomId,
+                        user_id: this.userId
+                    });
+                }
+            }
+            
+            showTypingIndicator(userId) {
+                if (userId !== this.userId) {
+                    this.elements.typingIndicator.textContent = `${userId} is typing...`;
+                    this.elements.typingIndicator.style.display = 'block';
+                }
+            }
+            
+            hideTypingIndicator() {
+                this.elements.typingIndicator.style.display = 'none';
+            }
+            
+            updateConnectionStatus(message, isConnected) {
+                this.elements.connectionStatus.textContent = message;
+                this.elements.connectionStatus.className = `connection-status ${isConnected ? '' : 'disconnected'}`;
+            }
+            
+            showError(message) {
+                console.error('Chat error:', message);
+                this.displaySystemMessage(`Error: ${message}`);
+            }
+            
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.elements.messagesContainer.scrollTo({
+                        top: this.elements.messagesContainer.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+        
+        // Initialize chat when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new FarmerChat();
+        });
+    </script>
+</body>
+</html>

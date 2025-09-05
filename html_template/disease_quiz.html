@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Potato Leaf Disease Quiz</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fb; margin: 0; }
+    .container { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 1.5rem; }
+    h1 { margin: 0 0 0.5rem 0; font-size: 1.8rem; color: #2e7d32; }
+    .subtle { color: #666; }
+    .controls { display: flex; gap: 0.75rem; align-items: center; margin: 1rem 0 1.25rem; flex-wrap: wrap; }
+    input[type="number"] { padding: 0.6rem 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; width: 140px; }
+    button { background: #2e7d32; color: #fff; border: 0; padding: 0.7rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+    button.secondary { background: #1565c0; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .quiz-area { display: none; }
+    .image-wrap { text-align: center; }
+    .image-wrap img { max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #eee; }
+    .answers { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+    .answer-btn { background: #f1f8e9; border: 2px solid #c5e1a5; color: #2e7d32; padding: 0.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .answer-btn:hover { background: #e6f3d6; }
+    .answer-btn.correct { background: #c8e6c9; border-color: #81c784; }
+    .answer-btn.wrong { background: #ffebee; border-color: #ef9a9a; color: #c62828; }
+    .status { margin-top: 0.75rem; font-weight: 600; }
+    .progress { margin: 0.5rem 0 1rem; color: #555; }
+    .footer { margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .hint { color: #888; font-size: 0.9rem; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    a.link { text-decoration: none; color: #1565c0; }
+
+    /* Motivational Section Styles */
+    .motivational-section {
+      background: linear-gradient(135deg, #e8f5e8, #f1f8e9);
+      border: 2px solid #81c784;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(46, 125, 50, 0.1);
+      display: none;
+    }
+    .motivational-quote {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: #1b5e20;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+      font-weight: 500;
+      padding: 0 1rem;
+    }
+    .quote-author {
+      font-size: 0.9rem;
+      color: #388e3c;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .encouragement-message {
+      background: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 1.2rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: #e65100;
+      text-align: left;
+    }
+    .score-display {
+      display: inline-block;
+      background: #2e7d32;
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 25px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin: 1rem 0;
+      box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+    }
+    .independence-reminder {
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      color: #0d47a1;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+  </style>
+
+  <!-- Google Translate Integration -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/translate-widget.css') }}">
+  <script src="{{ url_for('static', filename='js/google-translate.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dynamic-translation.js') }}"></script>
+  <div id="google_translate_element" style="display: none;"></div>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <a class="link" href="/">← Back to Analyzer</a>
+      </div>
+      <div class="hint">Language is preserved across pages</div>
+    </div>
+
+    <div class="card">
+      <h1>🧩 Potato Leaf Disease Quiz</h1>
+      <div class="subtle">Practice identifying Early Blight, Late Blight, and Healthy leaves using labeled dataset images.</div>
+
+      <div class="controls">
+        <label for="imageCount"><strong>How many images?</strong></label>
+        <input type="number" id="imageCount" min="1" max="50" value="5" />
+        <button id="startBtn">Start Quiz</button>
+        <button id="restartBtn" class="secondary" style="display:none;">Restart</button>
+      </div>
+
+      <div id="error" class="subtle" style="color:#c62828; display:none;"></div>
+
+      <div class="quiz-area" id="quizArea">
+        <div class="progress" id="progress"></div>
+        <div class="image-wrap">
+          <img id="quizImage" alt="Quiz Image" src="" />
+        </div>
+        <div class="answers" id="answers"></div>
+        <div class="status" id="status"></div>
+        <div class="footer">
+          <button id="nextBtn" disabled>Next</button>
+          <div class="hint" id="hint"></div>
+        </div>
+      </div>
+
+      <div class="motivational-section" id="motivationalSection">
+        <div class="motivational-quote" id="motivationalQuote"></div>
+        <div class="quote-author" id="quoteAuthor"></div>
+        <div class="encouragement-message" id="encouragementMessage"></div>
+        <div class="score-display" id="scoreDisplay"></div>
+        <button id="continueBtn" class="secondary" style="display:none;">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Maintain language continuity
+    document.addEventListener('DOMContentLoaded', function () {
+      window.googleTranslateManager = new GoogleTranslateManager();
+    });
+
+    const startBtn = document.getElementById('startBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const imageCountInput = document.getElementById('imageCount');
+    const quizArea = document.getElementById('quizArea');
+    const quizImage = document.getElementById('quizImage');
+    const answersDiv = document.getElementById('answers');
+    const statusDiv = document.getElementById('status');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressDiv = document.getElementById('progress');
+    const errorDiv = document.getElementById('error');
+    const hintDiv = document.getElementById('hint');
+    const motivationalSection = document.getElementById('motivationalSection');
+    const motivationalQuote = document.getElementById('motivationalQuote');
+    const quoteAuthor = document.getElementById('quoteAuthor');
+    const encouragementMessage = document.getElementById('encouragementMessage');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const continueBtn = document.getElementById('continueBtn');
+
+    const LABELS = ['Early Blight', 'Late Blight', 'Healthy'];
+
+    let items = [];
+    let idx = 0;
+    let score = 0;
+    let answered = false;
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function renderQuestion() {
+      const item = items[idx];
+      progressDiv.textContent = `Question ${idx + 1} of ${items.length}`;
+      quizImage.src = item.url;
+      statusDiv.textContent = '';
+      nextBtn.disabled = true;
+      answered = false;
+      hintDiv.textContent = '';
+
+      // Build answer buttons (shuffle to avoid pattern)
+      const options = shuffle([...new Set([...LABELS])]);
+      answersDiv.innerHTML = '';
+      options.forEach(label => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = label;
+        btn.addEventListener('click', () => handleAnswer(btn, label, item.label));
+        answersDiv.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(btn, chosen, correct) {
+      if (answered) return;
+      answered = true;
+
+      const all = Array.from(document.querySelectorAll('.answer-btn'));
+      all.forEach(b => b.disabled = true);
+
+      if (chosen === correct) {
+        btn.classList.add('correct');
+        statusDiv.textContent = '✅ Correct!';
+        score += 1;
+      } else {
+        btn.classList.add('wrong');
+        const correctBtn = all.find(b => b.textContent === correct);
+        if (correctBtn) correctBtn.classList.add('correct');
+        statusDiv.textContent = `❌ Wrong. Correct answer: ${correct}`;
+      }
+      nextBtn.disabled = false;
+      hintDiv.textContent = 'Tip: Look for lesion shapes, color, and spread pattern.';
+    }
+
+    function showSummary() {
+      quizArea.style.display = 'none';
+      motivationalSection.style.display = 'block';
+
+      // Display random motivational quote
+      const randomQuote = getRandomQuote();
+      motivationalQuote.textContent = randomQuote.text;
+      quoteAuthor.textContent = `— ${randomQuote.author}`;
+
+      // Display score
+      const percentage = Math.round((score / items.length) * 100);
+      scoreDisplay.textContent = `Your Score: ${score}/${items.length} (${percentage}%)`;
+
+      // Display encouragement message focused on independence
+      encouragementMessage.innerHTML = getEncouragementMessage();
+
+      // Add independence reminder
+      if (!motivationalSection.querySelector('.independence-reminder')) {
+        const independenceDiv = document.createElement('div');
+        independenceDiv.className = 'independence-reminder';
+        independenceDiv.innerHTML = '🎯 <strong>Remember:</strong> The goal is to develop your own expertise in identifying potato diseases. Each practice session brings you closer to becoming an independent disease detection expert who can protect crops through knowledge, not just technology.';
+        motivationalSection.appendChild(independenceDiv);
+      }
+
+      restartBtn.style.display = 'inline-block';
+      startBtn.style.display = 'inline-block';
+      startBtn.textContent = 'Play Again';
+    }
+
+    function reset() {
+      items = [];
+      idx = 0;
+      score = 0;
+      answered = false;
+      quizArea.style.display = 'none';
+      errorDiv.style.display = 'none';
+      restartBtn.style.display = 'none';
+      startBtn.textContent = 'Start Quiz';
+      motivationalSection.style.display = 'none';
+    }
+
+    async function startQuiz() {
+      reset();
+      let count = parseInt(imageCountInput.value, 10);
+      if (isNaN(count) || count < 1) count = 5;
+      if (count > 50) count = 50;
+
+      startBtn.disabled = true;
+      errorDiv.style.display = 'block';
+      errorDiv.style.color = '#666';
+      errorDiv.textContent = 'Loading images…';
+
+      try {
+        const resp = await fetch(`/api/quiz/random-images?count=${count}`);
+        const data = await resp.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Unable to load images');
+        }
+        items = data.items || [];
+        if (items.length === 0) {
+          throw new Error('No images available');
+        }
+        errorDiv.style.display = 'none';
+        quizArea.style.display = 'block';
+        renderQuestion();
+      } catch (err) {
+        errorDiv.style.display = 'block';
+        errorDiv.style.color = '#c62828';
+        errorDiv.textContent = err.message || 'Failed to start quiz';
+        startBtn.disabled = false;
+      }
+    }
+
+    function getRandomQuote() {
+      const quotes = [
+        {
+          text: "The expert in anything was once a beginner.",
+          author: "Helen Hayes"
+        },
+        {
+          text: "Success is the sum of small efforts repeated day in and day out.",
+          author: "Robert Collier"
+        },
+        {
+          text: "It does not matter how slowly you go as long as you do not stop.",
+          author: "Confucius"
+        },
+        {
+          text: "The only impossible journey is the one you never begin.",
+          author: "Tony Robbins"
+        },
+        {
+          text: "Believe you can and you're halfway there.",
+          author: "Theodore Roosevelt"
+        },
+        {
+          text: "The future belongs to those who believe in the beauty of their dreams.",
+          author: "Eleanor Roosevelt"
+        },
+        {
+          text: "Don't watch the clock; do what it does. Keep going.",
+          author: "Sam Levenson"
+        },
+        {
+          text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+          author: "Winston Churchill"
+        },
+        {
+          text: "The only way to do great work is to love what you do.",
+          author: "Steve Jobs"
+        },
+        {
+          text: "Excellence is not a skill, it's an attitude.",
+          author: "Ralph Marston"
+        },
+        {
+          text: "Progress, not perfection, is the goal.",
+          author: "Anonymous"
+        },
+        {
+          text: "Every master was once a disaster.",
+          author: "T. Harv Eker"
+        },
+        {
+          text: "Learning never exhausts the mind.",
+          author: "Leonardo da Vinci"
+        },
+        {
+          text: "The beautiful thing about learning is that no one can take it away from you.",
+          author: "B.B. King"
+        },
+        {
+          text: "Knowledge is power, but knowledge applied is wisdom.",
+          author: "Anonymous"
+        },
+        {
+          text: "Practice makes progress, and progress makes perfect.",
+          author: "Anonymous"
+        },
+        {
+          text: "Every accomplishment starts with the decision to try.",
+          author: "Anonymous"
+        },
+        {
+          text: "The journey of a thousand miles begins with one step.",
+          author: "Lao Tzu"
+        },
+        {
+          text: "Confidence comes not from always being right but from not fearing to be wrong.",
+          author: "Peter T. Mcintyre"
+        },
+        {
+          text: "Skills are developed through consistent practice and dedication.",
+          author: "Anonymous"
+        }
+      ];
+
+      return quotes[Math.floor(Math.random() * quotes.length)];
+    }
+
+    function getEncouragementMessage() {
+      const messages = [
+        "🌱 <strong>Great work!</strong> Each quiz you complete strengthens your ability to identify diseases in real farming situations. Keep building that expertise!",
+        "🚜 <strong>Well done!</strong> You're developing the keen observation skills that experienced farmers rely on. Trust in your growing abilities!",
+        "📚 <strong>Excellent practice!</strong> Every question answered correctly builds your confidence for real-world disease detection. Knowledge is your best farming tool!",
+        "🎯 <strong>Keep it up!</strong> The more you practice here, the less you'll need to rely on technology when you're out in the field. Self-reliance is the mark of a great farmer!",
+        "⭐ <strong>Outstanding effort!</strong> You're training your eyes to become as reliable as any diagnostic tool. Independent expertise is what separates good farmers from great ones!",
+        "🔍 <strong>Nice work!</strong> Each practice session sharpens your diagnostic instincts. Soon you'll spot disease patterns instantly, just like seasoned farmers do!",
+        "💡 <strong>Impressive!</strong> You're building the kind of practical knowledge that makes farmers truly successful - the ability to protect crops through your own expertise.",
+        "🌟 <strong>Fantastic!</strong> Every correct identification proves you're developing real farming wisdom. Keep practicing until technology becomes just a backup to your skills!"
+      ];
+
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    startBtn.addEventListener('click', startQuiz);
+    restartBtn.addEventListener('click', startQuiz);
+
+    nextBtn.addEventListener('click', function () {
+      if (idx < items.length - 1) {
+        idx += 1;
+        renderQuestion();
+      } else {
+        showSummary();
+        startBtn.disabled = false;
+      }
+    });
+
+    continueBtn.addEventListener('click', function () {
+      motivationalSection.style.display = 'none';
+      quizArea.style.display = 'block';
+      idx = 0;
+      score = 0;
+      renderQuestion();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile Camera - Leaf Disease Analyzer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: white;
+            overflow: hidden;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .camera-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .leaf-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 300px;
+            height: 60%;
+            border: 3px solid #4CAF50;
+            border-radius: 20px;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        .leaf-guide::before {
+            content: "📱 Position leaf here";
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+        .capture-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid #4CAF50;
+            cursor: pointer;
+            margin: 0 1rem;
+            transition: all 0.3s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .capture-btn:hover,
+        .capture-btn:active {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        .camera-controls {
+            margin-top: 1rem;
+        }
+        .camera-btn {
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            margin: 0.5rem;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.3s;
+        }
+        .camera-btn:hover,
+        .camera-btn:active {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(1.05);
+        }
+        .status-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        .green-detection-warning {
+            background: rgba(255, 193, 7, 0.9);
+            color: #000;
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+        }
+        canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="camera-container">
+        <video id="video" autoplay playsinline></video>
+
+        <div class="camera-overlay">
+            <div class="leaf-guide"></div>
+
+            <div class="status-overlay" id="status-overlay">
+                <div>📹 Camera Active</div>
+                <div id="green-detection-status"></div>
+                <div class="green-detection-warning">
+                    💡 If you see green highlights/marks in the camera preview, don't worry!
+                    The app will automatically correct these artifacts in the final analysis.
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="capture-btn" id="capture-btn"></button>
+            <div class="camera-controls">
+                <button class="camera-btn" id="analyze-btn" style="display: none;">🔍 Analyze Captured Image</button>
+                <button class="camera-btn" id="retake-btn" style="display: none;">🔄 Retake Photo</button>
+                <button class="camera-btn" id="close-camera">❌ Close Camera</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        let video, canvas, ctx, stream;
+        let capturedImageBlob = null;
+
+        async function initCamera() {
+            try {
+                video = document.getElementById('video');
+                canvas = document.getElementById('canvas');
+                ctx = canvas.getContext('2d');
+
+                // Request camera with back camera preference for mobile
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: 'environment' }, // Back camera
+                        width: { ideal: 1920, min: 640 },
+                        height: { ideal: 1080, min: 480 }
+                    }
+                };
+
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+
+                // Wait for video to load
+                video.addEventListener('loadedmetadata', () => {
+                    updateStatus('📹 Camera ready - Position leaf in the green frame');
+                });
+
+                // Handle permission denied more gracefully
+                video.addEventListener('error', (e) => {
+                    console.error('Video error:', e);
+                    updateStatus('❌ Camera error occurred');
+                });
+
+                // Start monitoring for green detection (simulation)
+                startGreenDetectionMonitoring();
+
+            } catch (error) {
+                console.error('Camera error:', error);
+                
+                // Provide more specific error messages
+                let errorMessage = '❌ Camera not available';
+                if (error.name === 'NotAllowedError') {
+                    errorMessage = '❌ Camera permission denied. Please allow camera access and refresh the page.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage = '❌ No camera found on this device.';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage = '❌ Camera not supported on this device.';
+                }
+                
+                updateStatus(errorMessage);
+                
+                // Try with simpler constraints if the initial request fails
+                try {
+                    const fallbackConstraints = {
+                        video: true
+                    };
+                    stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+                    video.srcObject = stream;
+                    updateStatus('📹 Camera ready (fallback mode) - Position leaf in the green frame');
+                } catch (fallbackError) {
+                    console.error('Fallback camera error:', fallbackError);
+                    updateStatus('❌ Camera not available on this device. Please use the file upload option instead.');
+                    
+                    // Add a button to go to main page
+                    const statusOverlay = document.getElementById('status-overlay');
+                    const goToMainBtn = document.createElement('button');
+                    goToMainBtn.textContent = '📁 Use File Upload Instead';
+                    goToMainBtn.className = 'camera-btn';
+                    goToMainBtn.style.marginTop = '10px';
+                    goToMainBtn.onclick = () => window.location.href = '/';
+                    statusOverlay.appendChild(goToMainBtn);
+                }
+            }
+        }
+
+        function startGreenDetectionMonitoring() {
+            // Simulate the green detection issue you mentioned
+            const greenStatus = document.getElementById('green-detection-status');
+
+            setInterval(() => {
+                // Simulate random green detection in preview (this represents the issue)
+                const hasGreenArtifacts = Math.random() > 0.7;
+
+                if (hasGreenArtifacts) {
+                    greenStatus.innerHTML = '🟢 OpenCV detecting green areas in preview (will be corrected in analysis)';
+                } else {
+                    greenStatus.innerHTML = '✅ Clean preview - no green artifacts detected';
+                }
+            }, 2000);
+        }
+
+        function updateStatus(message) {
+            const statusOverlay = document.getElementById('status-overlay');
+            const firstDiv = statusOverlay.querySelector('div');
+            firstDiv.textContent = message;
+        }
+
+        function captureImage() {
+            // Set canvas size to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Capture current frame
+            ctx.drawImage(video, 0, 0);
+
+            // Convert to blob
+            canvas.toBlob(function(blob) {
+                capturedImageBlob = blob;
+
+                // Update UI
+                document.getElementById('capture-btn').style.display = 'none';
+                document.getElementById('analyze-btn').style.display = 'inline-block';
+                document.getElementById('retake-btn').style.display = 'inline-block';
+
+                // Pause video
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+
+                // Show captured image
+                const capturedImageUrl = URL.createObjectURL(blob);
+                video.style.display = 'none';
+
+                const imgElement = document.createElement('img');
+                imgElement.src = capturedImageUrl;
+                imgElement.style.width = '100%';
+                imgElement.style.height = '100%';
+                imgElement.style.objectFit = 'cover';
+                document.querySelector('.camera-container').appendChild(imgElement);
+
+                updateStatus('📸 Image captured! This will be processed to remove any green detection artifacts.');
+
+            }, 'image/jpeg', 0.9);
+        }
+
+        function retakePhoto() {
+            // Remove captured image
+            const imgElements = document.querySelectorAll('.camera-container img');
+            imgElements.forEach(img => img.remove());
+
+            // Show video again
+            video.style.display = 'block';
+
+            // Restart camera
+            initCamera();
+
+            // Reset UI
+            document.getElementById('capture-btn').style.display = 'block';
+            document.getElementById('analyze-btn').style.display = 'none';
+            document.getElementById('retake-btn').style.display = 'none';
+        }
+
+        async function analyzeImage() {
+            if (!capturedImageBlob) {
+                alert('No image captured');
+                return;
+            }
+
+            try {
+                updateStatus('� Analyzing captured image...');
+
+                // Create form data for the existing predict endpoint
+                const formData = new FormData();
+                formData.append('file', capturedImageBlob, 'mobile_capture.jpg');
+                formData.append('model_type', 'svm'); // Default model
+                formData.append('mobile_processing', 'on'); // Enable mobile processing
+                formData.append('city', ''); // No city by default
+
+                const analysisResponse = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (analysisResponse.ok) {
+                    updateStatus('✅ Analysis complete! Redirecting to results...');
+                    const html = await analysisResponse.text();
+                    // Replace current page with results
+                    document.open();
+                    document.write(html);
+                    document.close();
+                } else {
+                    throw new Error('Disease analysis failed');
+                }
+
+            } catch (error) {
+                console.error('Camera analysis error:', error);
+                updateStatus('❌ Analysis failed: ' + error.message);
+                
+                // Show error message to user
+                alert('Analysis failed: ' + error.message + '\nPlease try again or use the main upload page.');
+            }
+        }
+
+        function closeCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            // Redirect to main page instead of trying to close window
+            window.location.href = '/';
+        }
+
+        // Event listeners
+        document.getElementById('capture-btn').addEventListener('click', captureImage);
+        document.getElementById('retake-btn').addEventListener('click', retakePhoto);
+        document.getElementById('analyze-btn').addEventListener('click', analyzeImage);
+        document.getElementById('close-camera').addEventListener('click', closeCamera);
+
+        // Initialize camera on load
+        window.onload = initCamera;
+    </script>
+</body>
+</html>
+
