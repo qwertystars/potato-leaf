@@ -1,0 +1,127 @@
+{
+  "defaultLanguage": "en",
+  "supportedLanguages": {
+    "en": {
+      "name": "English",
+      "nativeName": "English",
+      "code": "en",
+      "googleTranslateCode": "en",
+      "rtl": false
+    },
+    "es": {
+      "name": "Spanish",
+      "nativeName": "Español",
+      "code": "es",
+      "googleTranslateCode": "es",
+      "rtl": false
+    },
+    "fr": {
+      "name": "French",
+      "nativeName": "Français",
+      "code": "fr",
+      "googleTranslateCode": "fr",
+      "rtl": false
+    },
+    "de": {
+      "name": "German",
+      "nativeName": "Deutsch",
+      "code": "de",
+      "googleTranslateCode": "de",
+      "rtl": false
+    },
+    "it": {
+      "name": "Italian",
+      "nativeName": "Italiano",
+      "code": "it",
+      "googleTranslateCode": "it",
+      "rtl": false
+    },
+    "pt": {
+      "name": "Portuguese",
+      "nativeName": "Português",
+      "code": "pt",
+      "googleTranslateCode": "pt",
+      "rtl": false
+    },
+    "hi": {
+      "name": "Hindi",
+      "nativeName": "हिन्दी",
+      "code": "hi",
+      "googleTranslateCode": "hi",
+      "rtl": false
+    },
+    "zh": {
+      "name": "Chinese (Simplified)",
+      "nativeName": "中文 (简体)",
+      "code": "zh",
+      "googleTranslateCode": "zh",
+      "rtl": false
+    },
+    "ar": {
+      "name": "Arabic",
+      "nativeName": "العربية",
+      "code": "ar",
+      "googleTranslateCode": "ar",
+      "rtl": true
+    },
+    "ja": {
+      "name": "Japanese",
+      "nativeName": "日本語",
+      "code": "ja",
+      "googleTranslateCode": "ja",
+      "rtl": false
+    },
+    "ko": {
+      "name": "Korean",
+      "nativeName": "한국어",
+      "code": "ko",
+      "googleTranslateCode": "ko",
+      "rtl": false
+    },
+    "ru": {
+      "name": "Russian",
+      "nativeName": "Русский",
+      "code": "ru",
+      "googleTranslateCode": "ru",
+      "rtl": false
+    },
+    "th": {
+      "name": "Thai",
+      "nativeName": "ไทย",
+      "code": "th",
+      "googleTranslateCode": "th",
+      "rtl": false
+    },
+    "vi": {
+      "name": "Vietnamese",
+      "nativeName": "Tiếng Việt",
+      "code": "vi",
+      "googleTranslateCode": "vi",
+      "rtl": false
+    }
+  },
+  "persistence": {
+    "cookieName": "googtrans",
+    "cookieDays": 30,
+    "localStorageKey": "preferredLanguage",
+    "sessionStorageKey": "currentLanguage"
+  },
+  "googleTranslate": {
+    "scriptUrl": "https://translate.google.com/translate_a/element.js",
+    "pageLanguage": "en",
+    "autoDisplay": false,
+    "includedLanguages": "en,es,fr,de,it,pt,hi,zh,ar,ja,ko,ru,th,vi"
+  },
+  "ui": {
+    "showLanguageNames": true,
+    "showNativeNames": true,
+    "showFlags": false,
+    "position": "navbar",
+    "theme": "default"
+  },
+  "fallback": {
+    "enabled": true,
+    "language": "en",
+    "timeout": 5000
+  }
+}

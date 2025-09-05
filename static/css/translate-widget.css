@@ -1,0 +1,303 @@
+/* Google Translate Widget Styling */
+
+.translate-header {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    padding: 8px 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.language-selector {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+/* Create the green header bar */
+.green-header-bar {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    padding: 10px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    margin-bottom: 1rem;
+}
+
+.green-header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* Floating language selector for inline placement */
+#languageSelector {
+    position: relative;
+    display: inline-block;
+    z-index: 1000;
+}
+
+.language-dropdown {
+    background: rgba(255, 255, 255, 0.98);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 25px;
+    padding: 8px 35px 8px 35px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2e7d32;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 180px;
+    backdrop-filter: blur(10px);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%232e7d32' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%232e7d32' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat, no-repeat;
+    background-position: 10px center, calc(100% - 10px) center;
+    background-size: 16px 16px, 12px 12px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    position: relative;
+    display: inline-block;
+}
+
+.language-dropdown:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(76, 175, 80, 0.7);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.25);
+    transform: translateY(-2px);
+}
+
+.language-dropdown:focus {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(76, 175, 80, 0.8);
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
+}
+
+/* Hide the default Google Translate widget */
+#google_translate_element {
+    display: none !important;
+}
+
+.skiptranslate iframe {
+    display: none !important;
+}
+
+/* Style the Google Translate banner if it appears */
+.goog-te-banner-frame {
+    display: none !important;
+}
+
+.goog-te-banner-frame.skiptranslate {
+    display: none !important;
+}
+
+body.goog-te-no-scroll {
+    overflow: auto !important;
+}
+
+/* Style translated content to maintain readability */
+.goog-te-combo {
+    display: none !important;
+}
+
+/* Ensure translated text maintains proper styling */
+font[style*="background-color: rgba(0, 0, 255, 0.2)"] {
+    background-color: transparent !important;
+}
+
+/* Mobile responsive design */
+@media (max-width: 768px) {
+    .green-header-bar {
+        padding: 8px 15px;
+    }
+    
+    .language-dropdown {
+        min-width: 150px;
+        font-size: 13px;
+        padding: 6px 30px 6px 30px;
+        background-size: 14px 14px, 10px 10px;
+        background-position: 8px center, calc(100% - 8px) center;
+    }
+}
+
+@media (max-width: 480px) {
+    .green-header-bar {
+        padding: 6px 10px;
+    }
+    
+    .language-dropdown {
+        min-width: 130px;
+        font-size: 12px;
+        padding: 5px 28px 5px 28px;
+        border-radius: 20px;
+        background-size: 12px 12px, 8px 8px;
+        background-position: 6px center, calc(100% - 6px) center;
+    }
+}
+
+/* Add padding to body to account for fixed header */
+body {
+    padding-top: 0px !important; /* Remove fixed header padding since we're using inline positioning */
+}
+
+/* Container adjustments for better layout */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 0px !important;
+    }
+    
+    .container {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding-top: 0px !important;
+    }
+    
+    .container {
+        padding: 0.5rem;
+    }
+}
+
+/* Integration with existing site styling */
+.language-selector .language-dropdown option {
+    padding: 8px 15px;
+    background: white;
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+/* Better visual hierarchy */
+#languageSelector {
+    margin-top: 0.25rem; /* Slight offset to align better with titles */
+}
+
+/* Improved option styling */
+.language-dropdown option:hover {
+    background: #f8f9fa;
+}
+
+/* Loading state */
+.language-dropdown.loading {
+    opacity: 0.8;
+    cursor: wait;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.language-dropdown.loading::after {
+    content: "";
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+
+/* Success state */
+.language-dropdown.translated {
+    border-color: #4CAF50;
+    background: #f8fff8;
+}
+
+/* Error state */
+.language-dropdown.error {
+    border-color: #f44336;
+    background: #fff8f8;
+}
+
+/* Accessibility improvements */
+.language-dropdown:focus-visible {
+    outline: 2px solid #4CAF50;
+    outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .translate-header {
+        background: linear-gradient(135deg, #2d5a2d, #1a4a1a);
+    }
+    
+    .language-dropdown {
+        background: rgba(42, 42, 42, 0.95);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #e0e0e0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23e0e0e0' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23e0e0e0' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    }
+    
+    .language-dropdown option {
+        background: #2a2a2a;
+        color: #e0e0e0;
+    }
+    
+    .language-dropdown:hover {
+        background: rgba(62, 62, 62, 0.95);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .language-dropdown.translated {
+        background: rgba(26, 42, 26, 0.95);
+    }
+    
+    .language-dropdown.error {
+        background: rgba(42, 26, 26, 0.95);
+    }
+}
+
+/* Smooth transitions for all elements */
+* {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Ensure proper z-index for dropdowns */
+.language-selector {
+    position: relative;
+    z-index: 1001;
+}
+
+/* Style for language names in different scripts */
+.language-dropdown option[value="ar"],
+.language-dropdown option[value="ur"] {
+    direction: rtl;
+    text-align: right;
+}
+
+.language-dropdown option[value="zh"],
+.language-dropdown option[value="ja"],
+.language-dropdown option[value="ko"] {
+    font-family: "Noto Sans CJK", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.language-dropdown option[value="hi"],
+.language-dropdown option[value="bn"],
+.language-dropdown option[value="ta"],
+.language-dropdown option[value="te"],
+.language-dropdown option[value="mr"],
+.language-dropdown option[value="gu"],
+.language-dropdown option[value="kn"],
+.language-dropdown option[value="ml"] {
+    font-family: "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Tamil", sans-serif;
+}
